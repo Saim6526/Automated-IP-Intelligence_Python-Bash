@@ -1,1 +1,34 @@
+# We are creating this file to allow our defender.sh file to run in the background as we need it to run continuously
+[Unit]
 
+# Just givnig it a name here
+Description=Defender: Log Monitor & IP Blocker
+
+# This means it will open after network interface has been enabled 
+After=network.target
+
+[Service]
+
+# We are using 'iptables' which is a firewall so it requires root access. Because of that we are running it through users/groups with root previllage (which in this caseis us)
+User=root
+Group=root
+
+# This is really important as we are using 'brain.py' and when 'defender.sh' runs it starts the 'brain.py' in its folder (because thats where I kept it)
+# In order for that to work I made sure that it goes to that directory and starts running the scripts
+WorkingDirectory=/home/saimahmed/cyberproject/soc_automation/bridge_PB
+ExecStart=/bin/bash /home/saimahmed/cyberproject/soc_automation/bridge_PB/defender.sh
+
+# The 'always' mean it will restart the script no matter what value is returned or error occurs
+Restart=always
+
+# This is the delay between restarts
+RestartSec=5
+
+# This is another really neat thing to add. It makes sure your output logs, and error logs are in their dedicated files
+StandardOutput=append:/var/log/defender_service.log
+StandardError=append:/var/log/defender_service.err
+
+[Install]
+
+# This if I remeber correctly is to the the script to start after system boot up, network is up, user is ready to log, etc.. prcoesses are completed and once it reaches the 'multi-user' target
+WantedBy=multi-user.target
