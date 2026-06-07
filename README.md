@@ -25,7 +25,7 @@ This is a quick overview of the architecture of the project and what each part d
 
 **Persistence:** Managed as a systemd daemon to ensure high availability and automatic recovery across system reboots.
 
-## Try the Porject
+## Try the Project
 If you want to test how well my project works or you just want to use it yourself, feel free to, these are the requirements you might need to fulfill beforing going into it.
 
 Prerequisites:
