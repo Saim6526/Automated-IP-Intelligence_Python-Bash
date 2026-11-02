@@ -2,7 +2,7 @@
 
 SOC analysts shouldn't spend their day pasting IPs into reputation sites. I built a small Linux daemon that follows a log, checks each new source IP against AbuseIPDB, and drops high-risk ones at the firewall automatically.
 
-![Defender blocking a high-risk IP, with the resulting iptables DROP rule]
+<img width="800" height="399" alt="Python_Video" src="https://github.com/user-attachments/assets/a84e272b-1c8e-4ac3-a8d9-abd12e3df8ac" />
 
 
 ## Demo run
