@@ -7,7 +7,7 @@ SOC analysts shouldn't spend their day pasting IPs into reputation sites. I buil
 ## Demo run
 
 | IP read from log | Action |
-|---|---|---|
+|---|---|
 | 136.227.180.156, 144.56.235.1, 114.33.60.233, 88.218.47.203 | Allowed |
 | 195.88.57.172, 100.200.204.194 | Blocked (iptables DROP) |
 
