@@ -1,51 +1,52 @@
-# Automated-IP-Intelligence (Python-Bash)
+# Automated IP Intelligence (Bash + Python)
 
-## Overview
-This is an automation project, which uses Linux-native security tool designed to automate the detection and mitigation of brute-force attacks and malicious network activity. By integrating real-time log monitoring with threat intelligence, the aim of this project is to reduce Mean Time to Respond (MTTR) by moving from manual analysis to automated firewall remediation.
+SOC analysts shouldn't spend their day pasting IPs into reputation sites. I built a small Linux daemon that follows a log, checks each new source IP against AbuseIPDB, and drops high-risk ones at the firewall automatically.
 
-### The Reason/Problem (The "Why")
-This project was mainly made with the desire to move beyond manual security tasks and build a high-efficiency SOC workflow. In a live environment, a SOC Analyst shouldn't spend their day manually checking every suspicious IP or endlessly scrolling through raw logs to find a needle in a haystack.
-
-I built this tool to address that bottleneck. By combining automated log monitoring, real-time threat intelligence, and firewall orchestration, I’ve created a system that doesn't just alert—it defends. This project represents my shift toward Detection Engineering, where the goal is to automate the 'busy work' so analysts can focus on the high-level threats that actually matter.
-
-While this project focuses on IP-based remediation, it is designed to be the modular foundation for a full-scale automated SOC.
-
-I recognize that a complete security posture requires more than just firewall blocks; it requires a multi-layered defense. This tool is the 'first iteration'—a functional proof-of-concept that proves we can bridge raw telemetry with automated response. From here, the framework is ready to scale into deeper detection engineering, such as email header analysis, SIEM integration (ELK/Wazuh), and more complex 'Human-in-the-Loop' orchestration.
-
-## Architecture & Logic
-<img width="774" height="487" alt="image" src="https://github.com/user-attachments/assets/70ad3953-b5c6-4a5f-944e-7798961c5814" />
-
-This is a quick overview of the architecture of the project and what each part does:
-
-**Ingestion (The Lookout):** A Bash-based monitoring agent utilizes tail -F and awk for high-speed string processing of system logs.
-
-**Analysis (The Brain):** A Python engine handles JSON-based API requests to AbuseIPDB, calculating risk scores based on real-world threat telemetry.
-
-**Remediation (The Muscles):** Automated iptables drop-rules are applied to high-risk IPs, with a persistent local blocklist to minimize API latency and preserve credits.
-
-**Persistence:** Managed as a systemd daemon to ensure high availability and automatic recovery across system reboots.
-
-## Try the Project
-If you want to test how well my project works or you just want to use it yourself, feel free to, these are the requirements you might need to fulfill beforing going into it.
-
-Prerequisites:
-
-Linux (Tested on Kali/Ubuntu)
-
-Python 3.x
-
-AbuseIPDB API Key
-
-Installation:
-
-Clone the repository: git clone https://github.com/your-username/Sentinel-IP-Response.git
-
-Install dependencies: pip install requests
-
-Configure your API key in scripts/brain_1.py.
-
-Deploy the service: sudo cp config/defender.service /etc/systemd/system/
+![Defender blocking a high-risk IP, with the resulting iptables DROP rule]
 
 
-## DISCLAIMER
-This tool is for educational and defensive purposes. Always ensure you have permission to monitor logs and manage firewall rules on the target system.
+## Demo run
+
+| IP read from log | AbuseIPDB score | Action |
+|---|---|---|
+|  | [score] | Allowed |
+| | [score] | Blocked (iptables DROP) |
+
+## How it works
+
+![Architecture diagram](https://github.com/user-attachments/assets/70ad3953-b5c6-4a5f-944e-7798961c5814)
+
+1. **Watch:** `defender.sh` follows a log with `tail -F` and extracts the source IP with `awk`.
+2. **Check:** `brain.py` asks AbuseIPDB for the IP's abuse confidence score (0–100).
+3. **Block:** a score of 50 or higher adds an `iptables` DROP rule and records the IP in `blocklist.txt`.
+4. **Stay up:** runs as a `systemd` service that restarts on failure and starts at boot.
+
+**Design choices:** IPs already blocked or already checked are skipped, to save API quota. Loopback and the host's own IP are never blocked, so the tool can't lock itself out. The script uses `set -euo pipefail`, and the API call has a timeout so a slow response can't hang the loop.
+
+## Limitations
+
+- **Reputation-based, not brute-force detection (yet).** It doesn't count failed logins; it checks every new IP it sees.
+- IPv4 only, one log file, fixed threshold of 50.
+- [Tested against a generated log, not live traffic. Edit to match what you actually did.]
+- No automated tests.
+
+## Quick start
+
+```bash
+git clone https://github.com/Saim6526/Automated-IP-Intelligence_Python-Bash
+cd Automated-IP-Intelligence_Python-Bash
+pip install requests
+export ABUSEIPDB_KEY="your-key"
+sudo -E ./scripts/defender.sh /path/to/logfile
+```
+
+To run it as a service, edit the paths in `scripts/defender.service`, copy it to `/etc/systemd/system/`, then `sudo systemctl enable --now defender`.
+
+## Next up
+
+1. **Real brute-force logic:** count failures per IP in a time window and only look up IPs over a threshold.
+2. **Persistence:** re-apply the blocklist at startup, or use `ipset`.
+3. **Input validation:** check every IP before it reaches `iptables`.
+4. **SIEM link:** send block events into the ELK lab from my other projects.
+
+*For educational and defensive use only. Only run it on systems you have permission to monitor.*
