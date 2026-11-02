@@ -8,8 +8,8 @@ SOC analysts shouldn't spend their day pasting IPs into reputation sites. I buil
 
 | IP read from log | AbuseIPDB score | Action |
 |---|---|---|
-| 136.227.180.156, 144.56.225.2, 114.34.48.233, 60.218.47.203 | Allowed |
-| 195.85.57.172, 100.200.204.194 | Blocked (iptables DROP) |
+| 136.227.180.156, 144.56.235.1, 114.33.60.233, 88.218.47.203 | Allowed |
+| 195.88.57.172, 100.200.204.194 | Blocked (iptables DROP) |
 
 ## How it works
 
